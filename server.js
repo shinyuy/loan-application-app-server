@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
 const express = require("express");
+const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const logger = require("morgan");
 const Data = require("./data");
@@ -41,7 +41,7 @@ router.get("/getData", (req, res) => {
     return res.json({ success: true, data: data });
   });
 }); 
-
+ 
 
 // this is our update method
 // this method overwrites existing data in our database
@@ -70,21 +70,27 @@ router.delete("/deleteData", (req, res) => {
 router.post("/putData", (req, res) => {
   let data = new Data();
 
-  const { id, name, age, location, phoneNumber, amount, colateral, message, } = req.body;
+  const { id, name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, documents } = req.body;
 
-  if ((!id && id !== 0) || !name || !age || !location || !phoneNumber || !amount || !colateral || !message ) {
+  if ((!id && id !== 0) || !name || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message ) {
     return res.json({
       success: false,
       error: "INVALID INPUTS"
     });
   }
   data.name = name;
+  data.email = email;
   data.age = age;
   data.location = location;
+  data.region = region;
+  data.city = city;
+  data.street = street;
   data.phoneNumber = phoneNumber;
   data.amount = amount;
   data.colateral = colateral;
   data.message = message;
+  data.validated= validated;
+  data.documents = documents;
   data.id = id;
   data.save(err => {
     if (err) return res.json({ success: false, error: err });
