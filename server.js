@@ -40,19 +40,56 @@ router.get("/getData", (req, res) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data: data });
   });
-}); 
- 
+});
 
-// this is our update method
-// this method overwrites existing data in our database
-router.post("/updateData", (req, res) => {
-  const { id, update } = req.body;
-  Data.findOneAndUpdate(id, update, err => {
+// this our get method for a single applicant
+// this method fetches a single data object by id from the database.
+router.get("/getData/:id", (req, res) => {
+  let id = req.params.id;
+  Data.findById(id, (err, data) => {
     if (err) return res.json({ success: false, error: err });
-    return res.json({ success: true });
+    return res.json({ success: true, data: data });
   });
 });
 
+
+// this is our update method
+// this method overwrites existing data in our database
+router.post("/updateData/:id", (req, res) => {
+  let id = req.params.id;
+  const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, documents } = req.body;
+  Data.findById(id, (err, data) => {
+    if (!data)
+      res.status(404).send("data is not found");
+
+    else if (!name || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message)
+      return res.json({
+        success: false,
+        error: "INVALID INPUTS"
+      });
+
+    else
+      data.name = name;
+    data.email = email;
+    data.age = age;
+    data.location = location;
+    data.region = region;
+    data.city = city;
+    data.street = street;
+    data.phoneNumber = phoneNumber;
+    data.amount = amount;
+    data.colateral = colateral;
+    data.message = message;
+    data.validated = validated;
+    data.documents = documents;
+    data.save(err => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true });
+    });
+  })
+});
+
+/*
 // this is our delete method
 // this method removes existing data in our database
 router.delete("/deleteData", (req, res) => {
@@ -62,7 +99,7 @@ router.delete("/deleteData", (req, res) => {
     return res.json({ success: true });
   });
 });
-
+*/
 
 
 // this is our create method
@@ -70,9 +107,9 @@ router.delete("/deleteData", (req, res) => {
 router.post("/putData", (req, res) => {
   let data = new Data();
 
-  const { id, name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, documents } = req.body;
+  const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, documents } = req.body;
 
-  if ((!id && id !== 0) || !name || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message ) {
+  if (!name || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message) {
     return res.json({
       success: false,
       error: "INVALID INPUTS"
@@ -89,9 +126,8 @@ router.post("/putData", (req, res) => {
   data.amount = amount;
   data.colateral = colateral;
   data.message = message;
-  data.validated= validated;
+  data.validated = validated;
   data.documents = documents;
-  data.id = id;
   data.save(err => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true });
@@ -104,4 +140,3 @@ app.use("/api", router);
 
 // launch our backend into a port
 app.listen(API_PORT, () => console.log(`LISTENING ON PORT ${API_PORT}`));
-

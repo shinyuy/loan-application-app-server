@@ -4,10 +4,6 @@ const Schema = mongoose.Schema;
 // this will be our data base's data structure 
 const DataSchema = new Schema(
   {
-    id: {
-      type: Number,
-
-    },
     name: {
       required: true,
       type: String,
@@ -30,7 +26,7 @@ const DataSchema = new Schema(
     },
     region: {
       required: true,
-      type: Array
+      type: String
     },
     city: {
       required: true,
@@ -59,10 +55,12 @@ const DataSchema = new Schema(
     },
     validated: {
       type: Boolean,
-      default: false
+      default: false,
+      required: false
     },
     document: {
       type: Array,
+      required: false,
       default: []
     }
   },
