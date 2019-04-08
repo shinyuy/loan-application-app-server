@@ -58,9 +58,9 @@ const DataSchema = new Schema(
       default: false,
       required: false
     },
-    document: {
+    images: {
       type: Array,
-      required: false,
+      required: true,
       default: []
     }
   },

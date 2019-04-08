@@ -1,11 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+require('dotenv').config();
 const logger = require("morgan");
 const Data = require("./data");
 const API_PORT = process.env.PORT || 5000;
 const app = express();
 const router = express.Router();
+const formidable = require('express-formidable');
+const cloudinary = require('cloudinary');
 
 
 
@@ -32,6 +35,39 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(logger("dev"));
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET
+  });
+
+// this is our post method method images for uploading images from 
+// the front end, and from here they eventually get send and saved in the cloud with cloudinary
+  router.post('/images/uploadimage',formidable(),(req,res)=>{
+    cloudinary.uploader.upload(req.files.file.path,(result)=>{
+        console.log(result);
+        res.status(200).send({
+            public_id: result.public_id,
+            url: result.url
+        })
+    },{
+        public_id: `${Date.now()}`,
+        resource_type: 'auto'
+    })
+})
+
+
+router.get('/images/removeimage', (req, res)=>{
+  let image_id = req.query.public_id;
+
+  cloudinary.uploader.destroy(image_id, (error, result)=>{
+    if(error) return res.json({success: false, error});
+    res.status(200).send('Okay');
+  })
+})
+
 
 // this is our get method
 // this method fetches all available data in our database
@@ -81,7 +117,7 @@ router.post("/updateData/:id", (req, res) => {
     data.colateral = colateral;
     data.message = message;
     data.validated = validated;
-    data.documents = documents;
+    data.images = images;
     data.save(err => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true });
@@ -107,9 +143,9 @@ router.delete("/deleteData", (req, res) => {
 router.post("/putData", (req, res) => {
   let data = new Data();
 
-  const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, documents } = req.body;
+  const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, images } = req.body;
 
-  if (!name || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message) {
+  if (!name || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message || !images) {
     return res.json({
       success: false,
       error: "INVALID INPUTS"
@@ -127,7 +163,7 @@ router.post("/putData", (req, res) => {
   data.colateral = colateral;
   data.message = message;
   data.validated = validated;
-  data.documents = documents;
+  data.images = images;
   data.save(err => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true });
