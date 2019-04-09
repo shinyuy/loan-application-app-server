@@ -78,6 +78,23 @@ router.get("/getData", (req, res) => {
   });
 });
 
+
+// this is our get method using sortBy, to get just,
+// whoes loan application has been validated, and validated= true 
+router.get("/getData/validated", (req, res) => {
+    let query = Data.find({})
+  
+    query.where('validated', false)
+    .exec((err, docs)=>{
+      if(err) return res.status(400).send(err);
+      res.status(200).json({
+        success: true, docs
+      })
+    })
+    
+});
+
+
 // this our get method for a single applicant
 // this method fetches a single data object by id from the database.
 router.get("/getData/:id", (req, res) => {
@@ -87,25 +104,25 @@ router.get("/getData/:id", (req, res) => {
     return res.json({ success: true, data: data });
   });
 });
-
+    
 
 // this is our update method
 // this method overwrites existing data in our database
 router.post("/updateData/:id", (req, res) => {
   let id = req.params.id;
-  const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, documents } = req.body;
+  const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, images } = req.body;
   Data.findById(id, (err, data) => {
     if (!data)
       res.status(404).send("data is not found");
 
-    else if (!name || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message)
+    else if (!name || !email || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message || !validated || !images)
       return res.json({
         success: false,
         error: "INVALID INPUTS"
-      });
+      });  
 
     else
-      data.name = name;
+    data.name = name;
     data.email = email;
     data.age = age;
     data.location = location;
