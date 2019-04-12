@@ -13,12 +13,12 @@ const cloudinary = require('cloudinary');
 
 
 var cors = require('cors');
-app.use(cors());
+app.use(cors()); 
 
 // Connect to database
 const dbRoute = 'mongodb://microapp:microapp1@ds119606.mlab.com:19606/microapp';
 
-mongoose.connect(
+mongoose.connect(  
   dbRoute,
   { useNewUrlParser: true }
 );
@@ -41,7 +41,7 @@ cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET
-  });
+  }); 
 
 // this is our post method method images for uploading images from 
 // the front end, and from here they eventually get send and saved in the cloud with cloudinary
@@ -72,10 +72,10 @@ router.get('/images/removeimage', (req, res)=>{
 // this is our get method
 // this method fetches all available data in our database
 router.get("/getData", (req, res) => {
-  Data.find((err, data) => {
+  Data.find((err, data) => {      
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data: data });
-  });
+  }); 
 });
 
 
@@ -84,16 +84,15 @@ router.get("/getData", (req, res) => {
 router.get("/getData/validated", (req, res) => {
     let query = Data.find({})
   
-    query.where('validated', false)
+    query.where('validated', true)
     .exec((err, docs)=>{
       if(err) return res.status(400).send(err);
       res.status(200).json({
         success: true, docs
       })
-    })
-    
+    })      
 });
-
+ 
 
 // this our get method for a single applicant
 // this method fetches a single data object by id from the database.
@@ -101,21 +100,23 @@ router.get("/getData/:id", (req, res) => {
   let id = req.params.id;
   Data.findById(id, (err, data) => {
     if (err) return res.json({ success: false, error: err });
-    return res.json({ success: true, data: data });
+    return res.json({ success: true, data: data }); 
   });
-});
+}); 
     
 
 // this is our update method
 // this method overwrites existing data in our database
-router.post("/updateData/:id", (req, res) => {
+router.post("/updateData/:id", (req, res) => { 
   let id = req.params.id;
-  const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, images } = req.body;
+  const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, images,
+          loanAmount, annualInterest, repaymentPeriod, monthlyPayment, totalPayment, totalInterest } = req.body;
   Data.findById(id, (err, data) => {
     if (!data)
       res.status(404).send("data is not found");
 
-    else if (!name || !email || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message || !validated || !images)
+    else if (!name || !email || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message || !validated || !images ||
+             !loanAmount || !annualInterest || !repaymentPeriod || !monthlyPayment || !totalPayment || !totalInterest)
       return res.json({
         success: false,
         error: "INVALID INPUTS"
@@ -135,6 +136,12 @@ router.post("/updateData/:id", (req, res) => {
     data.message = message;
     data.validated = validated;
     data.images = images;
+    data.loanAmount = loanAmount;
+    data.annualInterest= annualInterest;
+    data.repaymentPeriod = repaymentPeriod;
+    data.monthlyPayment = monthlyPayment;
+    data.totalPayment = totalPayment;
+    data.totalInterest = totalInterest;
     data.save(err => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true });

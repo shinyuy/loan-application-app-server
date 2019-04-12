@@ -62,6 +62,30 @@ const DataSchema = new Schema(
       type: Array,
       required: true,
       default: []
+    },
+    loanAmount: {
+      type: Number,
+      required: false
+    },
+    annualInterest: {
+      type: Number,
+      required: false
+    },
+    repaymentPeriod: {
+      type: Number,
+      required: false
+    },
+    monthlyPayment: {
+      type: Number,
+      required: false
+    },
+    totalPayment: {
+      type: Number,
+      required: false    
+    },
+    totalInterest: {
+      type: Number,
+      required: false
     }
   },
   { timestamps: true }
