@@ -9,33 +9,25 @@ const app = express();
 const router = express.Router();
 const formidable = require('express-formidable');
 const cloudinary = require('cloudinary');
-
-
-
+const nodemailer = require('nodemailer');
 var cors = require('cors');
 app.use(cors()); 
 
 // Connect to database
 const dbRoute = 'mongodb://microapp:microapp1@ds119606.mlab.com:19606/microapp';
-
 mongoose.connect(  
   dbRoute,
   { useNewUrlParser: true }
 );
-
 let db = mongoose.connection;
-
 db.once("open", () => console.log("connected to the database"));
-
 // checks if connection with the database is successful
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
 // (optional) only made for logging and
-// bodyParser, parses the request body to be a readable json format
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(logger("dev"));
-
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -43,8 +35,7 @@ cloudinary.config({
   api_secret: process.env.API_SECRET
   }); 
 
-// this is our post method method images for uploading images from 
-// the front end, and from here they eventually get send and saved in the cloud with cloudinary
+// this is our post method method images for uploading images from the front end, and from here they eventually get send and saved in the cloud with cloudinary
   router.post('/images/uploadimage',formidable(),(req,res)=>{
     cloudinary.uploader.upload(req.files.file.path,(result)=>{
         console.log(result);
@@ -58,7 +49,6 @@ cloudinary.config({
     })
 })
 
-
 router.get('/images/removeimage', (req, res)=>{
   let image_id = req.query.public_id;
 
@@ -68,9 +58,7 @@ router.get('/images/removeimage', (req, res)=>{
   })
 })
 
-
-// this is our get method
-// this method fetches all available data in our database
+// this is our get method this method fetches all available data in our database
 router.get("/getData", (req, res) => {
   Data.find((err, data) => {      
     if (err) return res.json({ success: false, error: err });
@@ -78,9 +66,7 @@ router.get("/getData", (req, res) => {
   }); 
 });
 
-
-// this is our get method using sortBy, to get just,
-// whoes loan application has been validated, and validated= true 
+// this is our get method using sortBy, to get just, whoes loan application has been validated, and validated= true 
 router.get("/getData/validated", (req, res) => {
     let query = Data.find({})
   
@@ -93,9 +79,7 @@ router.get("/getData/validated", (req, res) => {
     })      
 });
  
-
-// this our get method for a single applicant
-// this method fetches a single data object by id from the database.
+// this our get method for a single applicant this method fetches a single data object by id from the database.
 router.get("/getData/:id", (req, res) => {
   let id = req.params.id;
   Data.findById(id, (err, data) => {
@@ -104,24 +88,20 @@ router.get("/getData/:id", (req, res) => {
   });
 }); 
     
-
-// this is our update method
-// this method overwrites existing data in our database
+// this is our update method this method overwrites existing data in our database
 router.post("/updateData/:id", (req, res) => { 
   let id = req.params.id;
   const { name, email, age, location, region, city, street, phoneNumber, amount, colateral, message, validated, images,
           loanAmount, annualInterest, repaymentPeriod, monthlyPayment, totalPayment, totalInterest } = req.body;
   Data.findById(id, (err, data) => {
-    if (!data)
+    if (!data) 
       res.status(404).send("data is not found");
 
-    else if (!name || !email || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message || !validated || !images ||
-             !loanAmount || !annualInterest || !repaymentPeriod || !monthlyPayment || !totalPayment || !totalInterest)
+    else if (!name || !email || !age || !location || !region || !city || !street || !phoneNumber || !amount || !colateral || !message || !validated || !images )
       return res.json({
         success: false,
         error: "INVALID INPUTS"
       });  
-
     else
     data.name = name;
     data.email = email;
@@ -147,6 +127,42 @@ router.post("/updateData/:id", (req, res) => {
       return res.json({ success: true });
     });
   })
+  // async..await is not allowed in global scope, must use a wrapper
+async function main(){
+
+  // Generate test SMTP service account from ethereal.email
+  // Only needed if you don't have a real mail account for testing
+  let testAccount = await nodemailer.createTestAccount();
+
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: testAccount.user, // generated ethereal user
+      pass: testAccount.pass // generated ethereal password
+    }
+  });
+
+  // send mail with defined transport object
+  let info = await transporter.sendMail({
+    from: '"XYZ Credit Union 👻" <shinyuy9@gmail.com>', // sender address
+    to: `${email}`, // list of receivers
+    subject: "Loan Application Validated ✔", // Subject line
+    text: `Hello  ${name} this email is to inform you that your application for a loan at XYZ Credit Union has been validated, and you should come to
+    our office at the Commercial Avenue Bamenda with your identification documents, as well as documents proving your ownership of the colateral property you provided on your application (${colateral}.)`, // plain text body
+    html: "<b>Credit Union Team</b>" // html body
+  });
+
+  console.log("Message sent: %s", info.messageId);
+  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+  // Preview only available when sending through an Ethereal account
+  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+}
+main().catch(console.error);
 });
 
 /*
@@ -161,9 +177,7 @@ router.delete("/deleteData", (req, res) => {
 });
 */
 
-
-// this is our create method
-// this method adds new data in our database
+// this is our create method this method adds new data in our database
 router.post("/putData", (req, res) => {
   let data = new Data();
 
@@ -193,7 +207,6 @@ router.post("/putData", (req, res) => {
     return res.json({ success: true });
   });
 });
-
 
 // append /api for our http requests
 app.use("/api", router);
