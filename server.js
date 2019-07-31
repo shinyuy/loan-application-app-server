@@ -252,12 +252,12 @@ router.post("/putData", (req, res) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true });
   });
-});
+});   
 
   /***************************************
  //      Users                         //
  **************************************/
-
+ 
 router.get('/auth', auth, (req, res)=>{
   res.status(200).json({
       isAdmin: req.user.role === 0 ? false : true,
@@ -266,11 +266,12 @@ router.get('/auth', auth, (req, res)=>{
       firstname: req.user.firstname,
       lastname: req.user.lastname,
       phoneNumber: req.user.phoneNumber,
-      role: req.user.role,
-      cart: req.user.cart,
-      history: req.user.history
+      role: req.user.role,   
+      images: req.user.images,
+      accountNumber: req.user.accountNumber,  
+      savings: req.user.savings
   }) 
-});
+}); 
  
  router.post("/register", (req, res) => {
    const user = new User(req.body);
@@ -306,10 +307,10 @@ router.get("/getUsers", (req, res) => {
       })
     })
 }); 
-
+  
 router.get("/getUsers/:id", (req, res) => {
   let id = req.params.id;
-  console.log(id);
+  console.log(id);   
   User.findById(id, (err, data) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data: data });
@@ -324,7 +325,7 @@ router.get("/getUsers/:id", (req, res) => {
          loginSuccess: false,
          message: "Auth failed, email not found"
        });
-
+ 
      //Grab the password and check
      user.comparePassword(req.body.password, (err, isMatch) => {
        if (!isMatch)
@@ -344,6 +345,60 @@ router.get("/getUsers/:id", (req, res) => {
      });
    });
  });  
+
+ router.post("/setAccountNumber/:id", (req, res) => {
+  let id = req.params.id;
+  const { firstname, lastname, email, phoneNumber,images, accountNumber } = req.body;
+  User.findById(id, (err, user) => {
+    if (!user)
+      res.status(404).send("user is not found");
+
+    else if (!firstname || !email || !lastname || !phoneNumber || !images || !accountNumber)
+      return res.json({
+        success: false,
+        error: "INVALID INPUTS" 
+      });
+    else                       
+      user.firstname = firstname;
+      user.lastname = lastname;
+    user.email = email;
+    user.phoneNumber = phoneNumber;
+    user.images = images;
+    user.accountNumber = accountNumber;
+    user.save(err => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true });
+    });
+  })  
+ })
+
+ router.post("/save/:id", (req, res) => {
+  let id = req.params.id;
+  console.log(req.body)
+  const { firstname, lastname, email, phoneNumber,images, accountNumber, savings } = req.body;
+  User.findById(id, (err, user) => {
+    if (!user)
+      res.status(404).send("user is not found");
+
+    else if (!firstname || !email || !lastname || !phoneNumber || !images || !accountNumber || !savings)
+      return res.json({
+        success: false,
+        error: "INVALID INPUTS" 
+      });  
+    else                       
+      user.firstname = firstname;
+      user.lastname = lastname;
+    user.email = email;
+    user.phoneNumber = phoneNumber;
+    user.images = images;
+    user.accountNumber = accountNumber;
+    user.savings = savings;
+    user.save(err => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true });
+    });
+  })  
+ })
 
  router.get("/logout", auth, (req, res) => {
    User.findOneAndUpdate({ _id: req.user._id }, { token: "" }, (err, doc) => {
